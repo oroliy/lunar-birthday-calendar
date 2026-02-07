@@ -1,23 +1,934 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>农历生日日历生成器</title>
     <script src="https://cdn.jsdelivr.net/npm/lunar-javascript@1.7.7/lunar.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chinese-conv@4.0.0/dist/index.js"></script>
-    <script src="https://raw.githubusercontent.com/nwcell/ics.js/master/ics.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/ics.js@latest/dist/ics.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .header {
+            background: white;
+            border-radius: 12px;
+            padding: 20px 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .header h1 {
+            color: #333;
+            font-size: 1.8rem;
+            margin: 0;
+        }
+        .header h1 small {
+            font-size: 0.9rem;
+            color: #666;
+            display: block;
+            margin-top: 5px;
+        }
+        .header-actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(102, 126, 234, 0.3);
+        }
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+        }
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+        .btn-danger {
+            background: #ff4757;
+            color: white;
+        }
+        .btn-danger:hover {
+            background: #ff3838;
+        }
+        .btn-success {
+            background: #2ed573;
+            color: white;
+        }
+        .btn-success:hover {
+            background: #26af61;
+        }
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 20px;
+        }
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        .card h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.3rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            color: #555;
+            font-weight: 500;
+        }
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .checkbox-group input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+        .checkbox-group label {
+            margin-bottom: 0;
+        }
+        .birthday-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .birthday-item {
+            background: #f8f9fa;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 15px;
+            transition: all 0.3s;
+        }
+        .birthday-item:hover {
+            border-color: #667eea;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2);
+        }
+        .birthday-info {
+            flex: 1;
+        }
+        .birthday-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+        .birthday-date {
+            color: #666;
+            font-size: 0.95rem;
+            margin-bottom: 5px;
+        }
+        .birthday-date .lunar {
+            color: #667eea;
+            font-weight: 500;
+        }
+        .birthday-date .solar {
+            color: #2ed573;
+        }
+        .birthday-note {
+            color: #888;
+            font-size: 0.9rem;
+            font-style: italic;
+        }
+        .birthday-actions {
+            display: flex;
+            gap: 8px;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #888;
+        }
+        .empty-state svg {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 15px;
+            opacity: 0.5;
+        }
+        .stats {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-around;
+            text-align: center;
+        }
+        .stats-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .stats-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+        }
+        .stats-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            margin-top: 5px;
+        }
+        .actions-bar {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #2ed573;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            animation: slideIn 0.3s ease;
+        }
+        .toast.error {
+            background: #ff4757;
+        }
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        .help-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1001;
+        }
+        .help-modal.show {
+            display: flex;
+        }
+        .help-modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative;
+        }
+        .help-modal-content h2 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .help-modal-content p {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+        .help-modal-content ul {
+            margin-left: 20px;
+            margin-bottom: 15px;
+        }
+        .help-modal-content li {
+            color: #666;
+            line-height: 1.8;
+            margin-bottom: 8px;
+        }
+        .close-modal {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #999;
+        }
+        .close-modal:hover {
+            color: #333;
+        }
+        .language-toggle {
+            display: flex;
+            gap: 5px;
+        }
+        .language-btn {
+            padding: 8px 16px;
+            border: 2px solid #e0e0e0;
+            background: white;
+            cursor: pointer;
+            border-radius: 6px;
+            font-size: 13px;
+            transition: all 0.3s;
+        }
+        .language-btn.active {
+            border-color: #667eea;
+            background: #667eea;
+            color: white;
+        }
+        .language-btn:hover:not(.active) {
+            border-color: #667eea;
+        }
+        .warning {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: 6px;
+            padding: 10px 15px;
+            margin-bottom: 15px;
+            color: #856404;
+            font-size: 0.9rem;
+            display: none;
+        }
+        .warning.show {
+            display: block;
+        }
+    </style>
 </head>
 <body>
     <div class="container">
-        <header>
-            <h1>农历生日日历生成器</h1>
-        </header>
-        <main>
-            
-        </main>
+        <div class="header">
+            <h1>
+                农历生日日历生成器
+                <small>添加农历生日，生成可导入日历应用的ICS文件</small>
+            </h1>
+            <div class="header-actions">
+                <div class="language-toggle">
+                    <button class="language-btn active" onclick="switchLanguage('zh-CN')">简体</button>
+                    <button class="language-btn" onclick="switchLanguage('zh-TW')">繁體</button>
+                </div>
+                <button class="btn btn-secondary" onclick="showHelp()">帮助</button>
+            </div>
+        </div>
+
+        <div class="stats">
+            <div class="stats-item">
+                <div class="stats-number" id="birthdayCount">0</div>
+                <div class="stats-label">已添加生日</div>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="left-panel">
+                <div class="card">
+                    <h2>添加农历生日</h2>
+                    <div class="warning" id="leapMonthWarning">
+                        ⚠️ 该年份没有闰月
+                    </div>
+                    <form id="birthdayForm">
+                        <div class="form-group">
+                            <label for="name">姓名 / 备注</label>
+                            <input type="text" id="name" required placeholder="例如：张三 / 生日">
+                        </div>
+                        <div class="form-group">
+                            <label for="year">参考年份（用于闰月判断）</label>
+                            <select id="year" onchange="checkLeapMonth()">
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="month">农历月份</label>
+                            <select id="month">
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <div class="checkbox-group">
+                                <input type="checkbox" id="isLeapMonth" onchange="checkLeapMonth()">
+                                <label for="isLeapMonth">闰月</label>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="day">农历日期</label>
+                            <select id="day">
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="note">备注（可选）</label>
+                            <textarea id="note" placeholder="例如：爸爸的生日"></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary" style="width: 100%;">添加生日</button>
+                    </form>
+                </div>
+
+                <div class="card">
+                    <h2>操作</h2>
+                    <div class="actions-bar">
+                        <button class="btn btn-success" onclick="generateICS()">生成ICS文件</button>
+                        <button class="btn btn-danger" onclick="clearAll()">清空所有</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="right-panel">
+                <div class="card">
+                    <h2>生日列表</h2>
+                    <div id="birthdayList" class="birthday-list">
+                        <div class="empty-state">
+                            <svg viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20a2 2 0 0 0 0 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V9h14v11zM9 11H7v2h2v-2zm4 0h-2v2h2v-2zm4 0h-2v2h2v-2zm-8 4H7v2h2v-2zm4 0h-2v2h2v-2zm4 0h-2v2h2v-2zm-8 4H7v2h2v-2zm4 0h-2v2h2v-2zm4 0h-2v2h2v-2z"/>
+                            </svg>
+                            <p>还没有添加生日</p>
+                            <p>在左侧表单中添加农历生日</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
+
+    <div class="help-modal" id="helpModal">
+        <div class="help-modal-content">
+            <button class="close-modal" onclick="closeHelp()">&times;</button>
+            <h2>使用帮助</h2>
+            <p>本工具帮助您生成农历生日的ICS日历文件，可导入到Google Calendar、Apple Calendar、Outlook等日历应用中。</p>
+            
+            <h3 style="margin-top: 20px; color: #333;">使用步骤</h3>
+            <ol>
+                <li>在左侧表单中输入姓名或备注</li>
+                <li>选择参考年份（用于判断是否有闰月）</li>
+                <li>选择农历月份和日期</li>
+                <li>如果是闰月，勾选"闰月"选项</li>
+                <li>点击"添加生日"按钮</li>
+                <li>可以继续添加更多生日</li>
+                <li>点击"生成ICS文件"下载日历文件</li>
+                <li>将下载的.ics文件导入到您的日历应用中</li>
+            </ol>
+
+            <h3 style="margin-top: 20px; color: #333;">注意事项</h3>
+            <ul>
+                <li>农历闰月不固定，每年不同，需要手动选择</li>
+                <li>如果选择的年份没有闰月，系统会显示警告</li>
+                <li>生成的ICS文件会永久重复（每年）</li>
+                <li>所有数据保存在浏览器本地，不会上传到服务器</li>
+                <li>建议使用现代浏览器（Chrome、Firefox、Safari、Edge）</li>
+            </ul>
+
+            <h3 style="margin-top: 20px; color: #333;">导入ICS文件</h3>
+            <p>生成ICS文件后，请根据您使用的日历应用导入：</p>
+            <ul>
+                <li><strong>Google Calendar</strong>：设置 > 导入/导出 > 从文件导入</li>
+                <li><strong>Apple Calendar</strong>：文件 > 导入 > 选择ICS文件</li>
+                <li><strong>Outlook</strong>：文件 > 打开和导出 > 打开日历 > 选择ICS文件</li>
+            </ul>
+        </div>
+    </div>
+
     <script>
-        
+        let birthdays = [];
+        let currentLanguage = 'zh-CN';
+
+        const translations = {
+            'zh-CN': {
+                title: '农历生日日历生成器',
+                subtitle: '添加农历生日，生成可导入日历应用的ICS文件',
+                help: '帮助',
+                addedBirthdays: '已添加生日',
+                addBirthday: '添加农历生日',
+                namePlaceholder: '例如：张三 / 生日',
+                referenceYear: '参考年份（用于闰月判断）',
+                lunarMonth: '农历月份',
+                leapMonth: '闰月',
+                lunarDay: '农历日期',
+                note: '备注（可选）',
+                notePlaceholder: '例如：爸爸的生日',
+                operations: '操作',
+                generateICS: '生成ICS文件',
+                clearAll: '清空所有',
+                birthdayList: '生日列表',
+                noBirthdays: '还没有添加生日',
+                addBirthdayHint: '在左侧表单中添加农历生日',
+                useHelp: '使用帮助',
+                helpText: '本工具帮助您生成农历生日的ICS日历文件，可导入到Google Calendar、Apple Calendar、Outlook等日历应用中。',
+                steps: '使用步骤',
+                step1: '在左侧表单中输入姓名或备注',
+                step2: '选择参考年份（用于判断是否有闰月）',
+                step3: '选择农历月份和日期',
+                step4: '如果是闰月，勾选"闰月"选项',
+                step5: '点击"添加生日"按钮',
+                step6: '可以继续添加更多生日',
+                step7: '点击"生成ICS文件"下载日历文件',
+                step8: '将下载的.ics文件导入到您的日历应用中',
+                notes: '注意事项',
+                note1: '农历闰月不固定，每年不同，需要手动选择',
+                note2: '如果选择的年份没有闰月，系统会显示警告',
+                note3: '生成的ICS文件会永久重复（每年）',
+                note4: '所有数据保存在浏览器本地，不会上传到服务器',
+                note5: '建议使用现代浏览器（Chrome、Firefox、Safari、Edge）',
+                importICS: '导入ICS文件',
+                importHelpText: '生成ICS文件后，请根据您使用的日历应用导入：',
+                googleCalendar: 'Google Calendar',
+                googleCalendarHelp: '设置 > 导入/导出 > 从文件导入',
+                appleCalendar: 'Apple Calendar',
+                appleCalendarHelp: '文件 > 导入 > 选择ICS文件',
+                outlook: 'Outlook',
+                outlookHelp: '文件 > 打开和导出 > 打开日历 > 选择ICS文件',
+                noLeapMonth: '该年份没有闰月',
+                successfullyAdded: '成功添加生日',
+                successfullyDeleted: '成功删除生日',
+                successfullyCleared: '成功清空所有生日',
+                successfullyGenerated: '成功生成ICS文件',
+                confirmClear: '确定要清空所有生日吗？'
+            },
+            'zh-TW': {
+                title: '農曆生日日曆生成器',
+                subtitle: '添加農曆生日，生成可導入日曆應用的ICS文件',
+                help: '幫助',
+                addedBirthdays: '已添加生日',
+                addBirthday: '添加農曆生日',
+                namePlaceholder: '例如：張三 / 生日',
+                referenceYear: '參考年份（用於閏月判斷）',
+                lunarMonth: '農曆月份',
+                leapMonth: '閏月',
+                lunarDay: '農曆日期',
+                note: '備註（可選）',
+                notePlaceholder: '例如：爸爸的生日',
+                operations: '操作',
+                generateICS: '生成ICS文件',
+                clearAll: '清空所有',
+                birthdayList: '生日列表',
+                noBirthdays: '還沒有添加生日',
+                addBirthdayHint: '在左側表單中添加農曆生日',
+                useHelp: '使用幫助',
+                helpText: '本工具幫助您生成農曆生日的ICS日曆文件，可導入到Google Calendar、Apple Calendar、Outlook等日曆應用中。',
+                steps: '使用步驟',
+                step1: '在左側表單中輸入姓名或備註',
+                step2: '選擇參考年份（用於判斷是否有閏月）',
+                step3: '選擇農曆月份和日期',
+                step4: '如果是閏月，勾選「閏月」選項',
+                step5: '點擊「添加生日」按鈕',
+                step6: '可以繼續添加更多生日',
+                step7: '點擊「生成ICS文件」下載日曆文件',
+                step8: '將下載的.ics文件導入到您的日曆應用中',
+                notes: '注意事項',
+                note1: '農曆閏月不固定，每年不同，需要手動選擇',
+                note2: '如果選擇的年份沒有閏月，系統會顯示警告',
+                note3: '生成的ICS文件會永久重複（每年）',
+                note4: '所有數據保存在瀏覽器本地，不會上傳到服務器',
+                note5: '建議使用現代瀏覽器（Chrome、Firefox、Safari、Edge）',
+                importICS: '導入ICS文件',
+                importHelpText: '生成ICS文件後，請根據您使用的日曆應用導入：',
+                googleCalendar: 'Google Calendar',
+                googleCalendarHelp: '設置 > 導入/導出 > 從文件導入',
+                appleCalendar: 'Apple Calendar',
+                appleCalendarHelp: '文件 > 導入 > 選擇ICS文件',
+                outlook: 'Outlook',
+                outlookHelp: '文件 > 打開和導出 > 打開日曆 > 選擇ICS文件',
+                noLeapMonth: '該年份沒有閏月',
+                successfullyAdded: '成功添加生日',
+                successfullyDeleted: '成功刪除生日',
+                successfullyCleared: '成功清空所有生日',
+                successfullyGenerated: '成功生成ICS文件',
+                confirmClear: '確定要清空所有生日嗎？'
+            }
+        };
+
+        const monthNames = ['正月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '腊月'];
+
+        function init() {
+            populateYearSelect();
+            populateMonthSelect();
+            populateDaySelect();
+            loadBirthdays();
+            loadLanguage();
+        }
+
+        function populateYearSelect() {
+            const yearSelect = document.getElementById('year');
+            const currentYear = new Date().getFullYear();
+            for (let i = currentYear - 50; i <= currentYear + 10; i++) {
+                const option = document.createElement('option');
+                option.value = i;
+                option.textContent = i;
+                if (i === currentYear) {
+                    option.selected = true;
+                }
+                yearSelect.appendChild(option);
+            }
+        }
+
+        function populateMonthSelect() {
+            const monthSelect = document.getElementById('month');
+            monthSelect.innerHTML = '';
+            monthNames.forEach((month, index) => {
+                const option = document.createElement('option');
+                option.value = index + 1;
+                option.textContent = month;
+                monthSelect.appendChild(option);
+            });
+        }
+
+        function populateDaySelect() {
+            const daySelect = document.getElementById('day');
+            daySelect.innerHTML = '';
+            for (let i = 1; i <= 30; i++) {
+                const option = document.createElement('option');
+                option.value = i;
+                option.textContent = i;
+                daySelect.appendChild(option);
+            }
+        }
+
+        function checkLeapMonth() {
+            const year = parseInt(document.getElementById('year').value);
+            const month = parseInt(document.getElementById('month').value);
+            const isLeapMonth = document.getElementById('isLeapMonth').checked;
+            const warning = document.getElementById('leapMonthWarning');
+
+            try {
+                const lunar = Lunar.fromYmd(year, month, 1);
+                const hasLeapMonth = lunar.getYear().getLeapMonth() === month;
+
+                if (isLeapMonth && !hasLeapMonth) {
+                    warning.classList.add('show');
+                } else {
+                    warning.classList.remove('show');
+                }
+            } catch (e) {
+                warning.classList.remove('show');
+            }
+        }
+
+        function getLunarDateDisplay(lunarMonth, lunarDay, isLeapMonth) {
+            let monthDisplay = monthNames[lunarMonth - 1];
+            if (isLeapMonth) {
+                monthDisplay = '闰' + monthDisplay;
+            }
+            return monthDisplay + lunarDay;
+        }
+
+        function getNextSolarDate(lunarMonth, lunarDay, isLeapMonth) {
+            const currentYear = new Date().getFullYear();
+            const nextYear = currentYear + 1;
+
+            try {
+                const lunar = Lunar.fromYmd(nextYear, lunarMonth, lunarDay, isLeapMonth);
+                const solar = lunar.getSolar();
+                return solar.toYmd();
+            } catch (e) {
+                return '计算失败';
+            }
+        }
+
+        function addBirthday(e) {
+            e.preventDefault();
+
+            const name = document.getElementById('name').value.trim();
+            const year = parseInt(document.getElementById('year').value);
+            const month = parseInt(document.getElementById('month').value);
+            const day = parseInt(document.getElementById('day').value);
+            const isLeapMonth = document.getElementById('isLeapMonth').checked;
+            const note = document.getElementById('note').value.trim();
+
+            const warning = document.getElementById('leapMonthWarning');
+            if (warning.classList.contains('show')) {
+                showToast('该年份没有闰月，请选择其他年份或取消闰月', 'error');
+                return;
+            }
+
+            const birthday = {
+                id: Date.now().toString(),
+                name,
+                referenceYear: year,
+                lunarMonth: month,
+                lunarDay: day,
+                isLeapMonth,
+                note,
+                createdAt: new Date().toISOString()
+            };
+
+            birthdays.push(birthday);
+            saveBirthdays();
+            renderBirthdays();
+            updateStats();
+
+            document.getElementById('birthdayForm').reset();
+            populateYearSelect();
+            populateMonthSelect();
+            populateDaySelect();
+
+            showToast(translations[currentLanguage].successfullyAdded);
+        }
+
+        function deleteBirthday(id) {
+            birthdays = birthdays.filter(b => b.id !== id);
+            saveBirthdays();
+            renderBirthdays();
+            updateStats();
+            showToast(translations[currentLanguage].successfullyDeleted);
+        }
+
+        function clearAll() {
+            if (confirm(translations[currentLanguage].confirmClear)) {
+                birthdays = [];
+                saveBirthdays();
+                renderBirthdays();
+                updateStats();
+                showToast(translations[currentLanguage].successfullyCleared);
+            }
+        }
+
+        function saveBirthdays() {
+            localStorage.setItem('lunarBirthdays', JSON.stringify(birthdays));
+        }
+
+        function loadBirthdays() {
+            const saved = localStorage.getItem('lunarBirthdays');
+            if (saved) {
+                birthdays = JSON.parse(saved);
+                renderBirthdays();
+                updateStats();
+            }
+        }
+
+        function renderBirthdays() {
+            const list = document.getElementById('birthdayList');
+            
+            if (birthdays.length === 0) {
+                list.innerHTML = `
+                    <div class="empty-state">
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20a2 2 0 0 0 0 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V9h14v11zM9 11H7v2h2v-2zm4 0h-2v2h2v-2zm4 0h-2v2h2v-2zm-8 4H7v2h2v-2zm4 0h-2v2h2v-2zm4 0h-2v2h2v-2zm-8 4H7v2h2v-2zm4 0h-2v2h2v-2zm4 0h-2v2h2v-2z"/>
+                        </svg>
+                        <p>${translations[currentLanguage].noBirthdays}</p>
+                        <p>${translations[currentLanguage].addBirthdayHint}</p>
+                    </div>
+                `;
+                return;
+            }
+
+            list.innerHTML = birthdays.map(birthday => {
+                const lunarDisplay = getLunarDateDisplay(birthday.lunarMonth, birthday.lunarDay, birthday.isLeapMonth);
+                const nextSolar = getNextSolarDate(birthday.lunarMonth, birthday.lunarDay, birthday.isLeapMonth);
+                
+                return `
+                    <div class="birthday-item">
+                        <div class="birthday-info">
+                            <div class="birthday-name">${birthday.name}</div>
+                            <div class="birthday-date">
+                                <span class="lunar">农历：${lunarDisplay}</span>
+                                <br>
+                                <span class="solar">下一年公历：${nextSolar}</span>
+                            </div>
+                            ${birthday.note ? `<div class="birthday-note">${birthday.note}</div>` : ''}
+                        </div>
+                        <div class="birthday-actions">
+                            <button class="btn btn-danger" onclick="deleteBirthday('${birthday.id}')">删除</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function updateStats() {
+            document.getElementById('birthdayCount').textContent = birthdays.length;
+        }
+
+        function generateICS() {
+            if (birthdays.length === 0) {
+                showToast('请先添加至少一个生日', 'error');
+                return;
+            }
+
+            try {
+                const cal = ics();
+                const currentYear = new Date().getFullYear();
+                const nextYear = currentYear + 1;
+
+                birthdays.forEach(birthday => {
+                    try {
+                        const lunar = Lunar.fromYmd(nextYear, birthday.lunarMonth, birthday.lunarDay, birthday.isLeapMonth);
+                        const solar = lunar.getSolar();
+
+                        const year = solar.getYear();
+                        const month = String(solar.getMonth()).padStart(2, '0');
+                        const day = String(solar.getDay()).padStart(2, '0');
+
+                        const startDate = `${year}${month}${day}T000000Z`;
+                        const endDate = `${year}${month}${day}T000000Z`;
+
+                        const lunarDisplay = getLunarDateDisplay(birthday.lunarMonth, birthday.lunarDay, birthday.isLeapMonth);
+                        let description = `农历：${lunarDisplay}`;
+                        if (birthday.note) {
+                            description += `\n备注：${birthday.note}`;
+                        }
+
+                        cal.addEvent(
+                            `${birthday.name}的生日 (${lunarDisplay})`,
+                            description,
+                            '',
+                            startDate,
+                            endDate,
+                            { freq: 'YEARLY' }
+                        );
+                    } catch (e) {
+                        console.error(`Failed to process birthday ${birthday.name}:`, e);
+                    }
+                });
+
+                cal.download('lunar-birthdays.ics');
+                showToast(translations[currentLanguage].successfullyGenerated);
+            } catch (e) {
+                console.error('Failed to generate ICS:', e);
+                showToast('生成ICS文件失败', 'error');
+            }
+        }
+
+        function switchLanguage(lang) {
+            currentLanguage = lang;
+            localStorage.setItem('language', lang);
+
+            const btns = document.querySelectorAll('.language-btn');
+            btns.forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+
+            applyLanguage();
+            renderBirthdays();
+        }
+
+        function loadLanguage() {
+            const saved = localStorage.getItem('language');
+            if (saved && translations[saved]) {
+                currentLanguage = saved;
+                const btns = document.querySelectorAll('.language-btn');
+                btns.forEach(btn => {
+                    btn.classList.remove('active');
+                    if (btn.textContent.includes(saved === 'zh-CN' ? '简体' : '繁體')) {
+                        btn.classList.add('active');
+                    }
+                });
+                applyLanguage();
+            }
+        }
+
+        function applyLanguage() {
+            const t = translations[currentLanguage];
+
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (t[key]) {
+                    el.textContent = t[key];
+                }
+            });
+
+            const subtitle = document.querySelector('h1 small');
+            if (subtitle) {
+                subtitle.textContent = t.subtitle;
+            }
+
+            const statsLabel = document.querySelector('.stats-label');
+            if (statsLabel) {
+                statsLabel.textContent = t.addedBirthdays;
+            }
+        }
+
+        function showHelp() {
+            document.getElementById('helpModal').classList.add('show');
+        }
+
+        function closeHelp() {
+            document.getElementById('helpModal').classList.remove('show');
+        }
+
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
+        }
+
+        document.getElementById('birthdayForm').addEventListener('submit', addBirthday);
+
+        document.getElementById('helpModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeHelp();
+            }
+        });
+
+        init();
     </script>
 </body>
 </html>
