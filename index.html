@@ -6,7 +6,7 @@
     <title>农历生日日历生成器</title>
     <script src="https://cdn.jsdelivr.net/npm/lunar-javascript@1.7.7/lunar.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chinese-conv@4.0.0/dist/index.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/ics.js@latest/dist/ics.min.js"></script>
+     <script src="https://cdn.jsdelivr.net/npm/ics.js@2.5.0/dist/ics.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -692,7 +692,15 @@
                 try {
                     const lunar = Lunar.fromYmd(year, lunarMonth, lunarDay, isLeapMonth);
                     const solar = lunar.getSolar();
-                    dates.push({ year: year, date: solar.toYmd() });
+                    
+                    const yearNum = solar.getYear();
+                    const monthNum = solar.getMonth();
+                    const dayNum = solar.getDay();
+                    
+                    const month = String(monthNum + 1).padStart(2, '0');
+                    const day = String(dayNum).padStart(2, '0');
+                    
+                    dates.push({ year: year, date: `${yearNum}-${month}-${day}` });
                 } catch (e) {
                     dates.push({ year: year, date: '计算失败' });
                 }
@@ -828,6 +836,11 @@
                 return;
             }
 
+            if (typeof ics === 'undefined') {
+                showToast('ICS库未加载，请刷新页面重试', 'error');
+                return;
+            }
+
             try {
                 const cal = ics();
                 const currentYear = new Date().getFullYear();
@@ -868,7 +881,7 @@
                 showToast(translations[currentLanguage].successfullyGenerated);
             } catch (e) {
                 console.error('Failed to generate ICS:', e);
-                showToast('生成ICS文件失败', 'error');
+                showToast('生成ICS文件失败，请查看控制台', 'error');
             }
         }
 
