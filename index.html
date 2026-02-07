@@ -683,12 +683,12 @@
             return monthDisplay + lunarDay;
         }
 
-        function getNextSolarDates(lunarMonth, lunarDay, isLeapMonth) {
+         function getNextSolarDates(lunarMonth, lunarDay, isLeapMonth) {
             const currentYear = new Date().getFullYear();
             const dates = [];
 
-            for (let i = 1; i <= 5; i++) {
-                const year = currentYear + i;
+            for (let j = 1; j <= 5; j++) {
+                const year = currentYear + j;
                 try {
                     const lunar = Lunar.fromYmd(year, lunarMonth, lunarDay, isLeapMonth);
                     const solar = lunar.getSolar();
