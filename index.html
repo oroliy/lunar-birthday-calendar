@@ -160,6 +160,13 @@
         .checkbox-group label {
             margin-bottom: 0;
         }
+
+        .optional-indicator {
+            color: #999;
+            font-weight: normal;
+            font-size: 0.9em;
+        }
+
         .birthday-list {
             display: flex;
             flex-direction: column;
@@ -398,32 +405,32 @@
                     </div>
                     <form id="birthdayForm">
                         <div class="form-group">
-                            <label for="name">姓名 / 备注</label>
+                            <label for="name">姓名 <span class="optional-indicator">(必填)</span></label>
                             <input type="text" id="name" required placeholder="例如：张三 / 生日">
                         </div>
                         <div class="form-group">
-                            <label for="year">参考年份（用于闰月判断）</label>
+                            <label for="year">参考年份（用于闰月判断）<span class="optional-indicator">(必填)</span></label>
                             <select id="year" onchange="checkLeapMonth()">
                             </select>
                         </div>
                         <div class="form-group">
-                            <label for="month">农历月份</label>
+                            <label for="month">农历月份 <span class="optional-indicator">(必填)</span></label>
                             <select id="month">
                             </select>
                         </div>
                         <div class="form-group">
                             <div class="checkbox-group">
                                 <input type="checkbox" id="isLeapMonth" onchange="checkLeapMonth()">
-                                <label for="isLeapMonth">闰月</label>
+                                <label for="isLeapMonth" style="margin-bottom: 0;">闰月 <span class="optional-indicator">(可选)</span></label>
                             </div>
                         </div>
                         <div class="form-group">
-                            <label for="day">农历日期</label>
+                            <label for="day">农历日期 <span class="optional-indicator">(必填)</span></label>
                             <select id="day">
                             </select>
                         </div>
                         <div class="form-group">
-                            <label for="note">备注（可选）</label>
+                            <label for="note">备注 <span class="optional-indicator">(可选)</span></label>
                             <textarea id="note" placeholder="例如：爸爸的生日"></textarea>
                         </div>
                         <button type="submit" class="btn btn-primary" style="width: 100%;">添加生日</button>
@@ -676,17 +683,22 @@
             return monthDisplay + lunarDay;
         }
 
-        function getNextSolarDate(lunarMonth, lunarDay, isLeapMonth) {
+        function getNextSolarDates(lunarMonth, lunarDay, isLeapMonth) {
             const currentYear = new Date().getFullYear();
-            const nextYear = currentYear + 1;
+            const dates = [];
 
-            try {
-                const lunar = Lunar.fromYmd(nextYear, lunarMonth, lunarDay, isLeapMonth);
-                const solar = lunar.getSolar();
-                return solar.toYmd();
-            } catch (e) {
-                return '计算失败';
+            for (let i = 1; i <= 5; i++) {
+                const year = currentYear + i;
+                try {
+                    const lunar = Lunar.fromYmd(year, lunarMonth, lunarDay, isLeapMonth);
+                    const solar = lunar.getSolar();
+                    dates.push({ year: year, date: solar.toYmd() });
+                } catch (e) {
+                    dates.push({ year: year, date: '计算失败' });
+                }
             }
+
+            return dates;
         }
 
         function addBirthday(e) {
@@ -778,7 +790,14 @@
 
             list.innerHTML = birthdays.map(birthday => {
                 const lunarDisplay = getLunarDateDisplay(birthday.lunarMonth, birthday.lunarDay, birthday.isLeapMonth);
-                const nextSolar = getNextSolarDate(birthday.lunarMonth, birthday.lunarDay, birthday.isLeapMonth);
+                const solarDates = getNextSolarDates(birthday.lunarMonth, birthday.lunarDay, birthday.isLeapMonth);
+                
+                const datesDisplay = solarDates.map((date, index) => {
+                    if (index === 0) {
+                        return `<div style="margin-top: 8px;"><span class="solar">${date.year}年公历：${date.date}</span></div>`;
+                    }
+                    return `<div style="margin-top: 4px;"><span class="solar">${date.year}年公历：${date.date}</span></div>`;
+                }).join('');
                 
                 return `
                     <div class="birthday-item">
@@ -787,7 +806,7 @@
                             <div class="birthday-date">
                                 <span class="lunar">农历：${lunarDisplay}</span>
                                 <br>
-                                <span class="solar">下一年公历：${nextSolar}</span>
+                                ${datesDisplay}
                             </div>
                             ${birthday.note ? `<div class="birthday-note">${birthday.note}</div>` : ''}
                         </div>
