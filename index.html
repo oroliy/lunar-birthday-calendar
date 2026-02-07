@@ -6,7 +6,7 @@
     <title>农历生日日历生成器</title>
     <script src="https://cdn.jsdelivr.net/npm/lunar-javascript@1.7.7/lunar.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chinese-conv@4.0.0/dist/index.js"></script>
-     <script src="https://cdn.jsdelivr.net/npm/ics.js@2.5.0/dist/ics.min.js"></script>
+     <script src="https://cdn.jsdelivr.net/npm/ics.js@2.3.2/dist/ics.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -687,8 +687,8 @@
             const currentYear = new Date().getFullYear();
             const dates = [];
 
-            for (let j = 1; j <= 5; j++) {
-                const year = currentYear + j;
+            for (let j = 0; j < 5; j++) {
+                const year = currentYear + 1 + j;
                 try {
                     const lunar = Lunar.fromYmd(year, lunarMonth, lunarDay, isLeapMonth);
                     const solar = lunar.getSolar();
