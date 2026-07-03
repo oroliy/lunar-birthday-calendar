@@ -4,9 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>农历生日日历生成器</title>
-    <script src="https://cdn.jsdelivr.net/npm/lunar-javascript@1.7.7/lunar.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chinese-conv@4.0.0/dist/index.js"></script>
-     <script src="https://cdn.jsdelivr.net/npm/ics.js@2.3.2/dist/ics.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -377,85 +374,85 @@
     <div class="container">
         <div class="header">
             <h1>
-                农历生日日历生成器
-                <small>添加农历生日，生成可导入日历应用的ICS文件</small>
+                <span data-i18n="title">农历生日日历生成器</span>
+                <small data-i18n="subtitle">添加农历生日，生成可导入日历应用的ICS文件</small>
             </h1>
             <div class="header-actions">
                 <div class="language-toggle">
-                    <button class="language-btn active" onclick="switchLanguage('zh-CN')">简体</button>
-                    <button class="language-btn" onclick="switchLanguage('zh-TW')">繁體</button>
+                    <button class="language-btn active" onclick="switchLanguage('zh-CN', event)">简体</button>
+                    <button class="language-btn" onclick="switchLanguage('zh-TW', event)">繁體</button>
                 </div>
-                <button class="btn btn-secondary" onclick="showHelp()">帮助</button>
+                <button class="btn btn-secondary" onclick="showHelp()" data-i18n="help">帮助</button>
             </div>
         </div>
 
         <div class="stats">
             <div class="stats-item">
                 <div class="stats-number" id="birthdayCount">0</div>
-                <div class="stats-label">已添加生日</div>
+                <div class="stats-label" data-i18n="addedBirthdays">已添加生日</div>
             </div>
         </div>
 
         <div class="main-content">
             <div class="left-panel">
                 <div class="card">
-                    <h2>添加农历生日</h2>
+                    <h2 data-i18n="addBirthday">添加农历生日</h2>
                     <div class="warning" id="leapMonthWarning">
-                        ⚠️ 该年份没有闰月
+                        ⚠️ <span data-i18n="noLeapMonth">该年份没有闰月</span>
                     </div>
                     <form id="birthdayForm">
                         <div class="form-group">
-                            <label for="name">姓名 <span class="optional-indicator">(必填)</span></label>
-                            <input type="text" id="name" required placeholder="例如：张三 / 生日">
+                            <label for="name"><span data-i18n="name">姓名</span> <span class="optional-indicator">(必填)</span></label>
+                            <input type="text" id="name" required data-i18n-placeholder="namePlaceholder" placeholder="例如：张三 / 生日">
                         </div>
                         <div class="form-group">
-                            <label for="year">参考年份（用于闰月判断）<span class="optional-indicator">(必填)</span></label>
+                            <label for="year"><span data-i18n="referenceYear">参考年份（用于闰月判断）</span> <span class="optional-indicator">(必填)</span></label>
                             <select id="year" onchange="checkLeapMonth()">
                             </select>
                         </div>
                         <div class="form-group">
-                            <label for="month">农历月份 <span class="optional-indicator">(必填)</span></label>
+                            <label for="month"><span data-i18n="lunarMonth">农历月份</span> <span class="optional-indicator">(必填)</span></label>
                             <select id="month">
                             </select>
                         </div>
                         <div class="form-group">
                             <div class="checkbox-group">
                                 <input type="checkbox" id="isLeapMonth" onchange="checkLeapMonth()">
-                                <label for="isLeapMonth" style="margin-bottom: 0;">闰月 <span class="optional-indicator">(可选)</span></label>
+                                <label for="isLeapMonth" style="margin-bottom: 0;"><span data-i18n="leapMonth">闰月</span> <span class="optional-indicator">(可选)</span></label>
                             </div>
                         </div>
                         <div class="form-group">
-                            <label for="day">农历日期 <span class="optional-indicator">(必填)</span></label>
+                            <label for="day"><span data-i18n="lunarDay">农历日期</span> <span class="optional-indicator">(必填)</span></label>
                             <select id="day">
                             </select>
                         </div>
                         <div class="form-group">
-                            <label for="note">备注 <span class="optional-indicator">(可选)</span></label>
-                            <textarea id="note" placeholder="例如：爸爸的生日"></textarea>
+                            <label for="note"><span data-i18n="note">备注</span> <span class="optional-indicator">(可选)</span></label>
+                            <textarea id="note" data-i18n-placeholder="notePlaceholder" placeholder="例如：爸爸的生日"></textarea>
                         </div>
-                        <button type="submit" class="btn btn-primary" style="width: 100%;">添加生日</button>
+                        <button type="submit" class="btn btn-primary" style="width: 100%;" data-i18n="addBirthdayBtn">添加生日</button>
                     </form>
                 </div>
 
                 <div class="card">
-                    <h2>操作</h2>
+                    <h2 data-i18n="operations">操作</h2>
                     <div class="actions-bar">
-                        <button class="btn btn-success" onclick="generateICS()">生成ICS文件</button>
-                        <button class="btn btn-danger" onclick="clearAll()">清空所有</button>
+                        <button class="btn btn-success" onclick="generateICS()" data-i18n="generateICS">生成ICS文件</button>
+                        <button class="btn btn-danger" onclick="clearAll()" data-i18n="clearAll">清空所有</button>
                     </div>
                 </div>
             </div>
 
             <div class="right-panel">
                 <div class="card">
-                    <h2>生日列表</h2>
+                    <h2 data-i18n="birthdayList">生日列表</h2>
                     <div id="birthdayList" class="birthday-list">
                         <div class="empty-state">
                             <svg viewBox="0 0 24 24" fill="currentColor">
                                 <path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20a2 2 0 0 0 0 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V9h14v11zM9 11H7v2h2v-2zm4 0h-2v2h2v-2zm4 0h-2v2h2v-2zm-8 4H7v2h2v-2zm4 0h-2v2h2v-2zm4 0h-2v2h2v-2zm-8 4H7v2h2v-2zm4 0h-2v2h2v-2zm4 0h-2v2h2v-2z"/>
                             </svg>
-                            <p>还没有添加生日</p>
-                            <p>在左侧表单中添加农历生日</p>
+                            <p data-i18n="noBirthdays">还没有添加生日</p>
+                            <p data-i18n="addBirthdayHint">在左侧表单中添加农历生日</p>
                         </div>
                     </div>
                 </div>
@@ -466,40 +463,43 @@
     <div class="help-modal" id="helpModal">
         <div class="help-modal-content">
             <button class="close-modal" onclick="closeHelp()">&times;</button>
-            <h2>使用帮助</h2>
-            <p>本工具帮助您生成农历生日的ICS日历文件，可导入到Google Calendar、Apple Calendar、Outlook等日历应用中。</p>
-            
-            <h3 style="margin-top: 20px; color: #333;">使用步骤</h3>
+            <h2 data-i18n="useHelp">使用帮助</h2>
+            <p data-i18n="helpText">本工具帮助您生成农历生日的ICS日历文件，可导入到Google Calendar、Apple Calendar、Outlook等日历应用中。</p>
+
+            <h3 style="margin-top: 20px; color: #333;" data-i18n="steps">使用步骤</h3>
             <ol>
-                <li>在左侧表单中输入姓名或备注</li>
-                <li>选择参考年份（用于判断是否有闰月）</li>
-                <li>选择农历月份和日期</li>
-                <li>如果是闰月，勾选"闰月"选项</li>
-                <li>点击"添加生日"按钮</li>
-                <li>可以继续添加更多生日</li>
-                <li>点击"生成ICS文件"下载日历文件</li>
-                <li>将下载的.ics文件导入到您的日历应用中</li>
+                <li data-i18n="step1">在左侧表单中输入姓名或备注</li>
+                <li data-i18n="step2">选择参考年份（用于判断是否有闰月）</li>
+                <li data-i18n="step3">选择农历月份和日期</li>
+                <li data-i18n="step4">如果是闰月，勾选"闰月"选项</li>
+                <li data-i18n="step5">点击"添加生日"按钮</li>
+                <li data-i18n="step6">可以继续添加更多生日</li>
+                <li data-i18n="step7">点击"生成ICS文件"下载日历文件</li>
+                <li data-i18n="step8">将下载的.ics文件导入到您的日历应用中</li>
             </ol>
 
-            <h3 style="margin-top: 20px; color: #333;">注意事项</h3>
+            <h3 style="margin-top: 20px; color: #333;" data-i18n="notes">注意事项</h3>
             <ul>
-                <li>农历闰月不固定，每年不同，需要手动选择</li>
-                <li>如果选择的年份没有闰月，系统会显示警告</li>
-                <li>生成的ICS文件会永久重复（每年）</li>
-                <li>所有数据保存在浏览器本地，不会上传到服务器</li>
-                <li>建议使用现代浏览器（Chrome、Firefox、Safari、Edge）</li>
+                <li data-i18n="note1">农历闰月不固定，每年不同，需要手动选择</li>
+                <li data-i18n="note2">如果选择的年份没有闰月，系统会显示警告</li>
+                <li data-i18n="note3">生成的ICS文件会永久重复（每年）</li>
+                <li data-i18n="note4">所有数据保存在浏览器本地，不会上传到服务器</li>
+                <li data-i18n="note5">建议使用现代浏览器（Chrome、Firefox、Safari、Edge）</li>
             </ul>
 
-            <h3 style="margin-top: 20px; color: #333;">导入ICS文件</h3>
-            <p>生成ICS文件后，请根据您使用的日历应用导入：</p>
+            <h3 style="margin-top: 20px; color: #333;" data-i18n="importICS">导入ICS文件</h3>
+            <p data-i18n="importHelpText">生成ICS文件后，请根据您使用的日历应用导入：</p>
             <ul>
-                <li><strong>Google Calendar</strong>：设置 > 导入/导出 > 从文件导入</li>
-                <li><strong>Apple Calendar</strong>：文件 > 导入 > 选择ICS文件</li>
-                <li><strong>Outlook</strong>：文件 > 打开和导出 > 打开日历 > 选择ICS文件</li>
+                <li><strong data-i18n="googleCalendar">Google Calendar</strong>：<span data-i18n="googleCalendarHelp">设置 > 导入/导出 > 从文件导入</span></li>
+                <li><strong data-i18n="appleCalendar">Apple Calendar</strong>：<span data-i18n="appleCalendarHelp">文件 > 导入 > 选择ICS文件</span></li>
+                <li><strong data-i18n="outlook">Outlook</strong>：<span data-i18n="outlookHelp">文件 > 打开和导出 > 打开日历 > 选择ICS文件</span></li>
             </ul>
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/lunar-javascript@1.7.7/lunar.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chinese-conv@4.0.0/dist/index.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/ics.js@2.3.2/dist/ics.min.js"></script>
     <script>
         let birthdays = [];
         let currentLanguage = 'zh-CN';
@@ -516,7 +516,7 @@
                 lunarMonth: '农历月份',
                 leapMonth: '闰月',
                 lunarDay: '农历日期',
-                note: '备注（可选）',
+                note: '备注',
                 notePlaceholder: '例如：爸爸的生日',
                 operations: '操作',
                 generateICS: '生成ICS文件',
@@ -554,7 +554,15 @@
                 successfullyDeleted: '成功删除生日',
                 successfullyCleared: '成功清空所有生日',
                 successfullyGenerated: '成功生成ICS文件',
-                confirmClear: '确定要清空所有生日吗？'
+                confirmClear: '确定要清空所有生日吗？',
+                name: '姓名',
+                addBirthdayBtn: '添加生日',
+                del: '删除',
+                lunarLabel: '农历',
+                solarLabel: '公历',
+                noBirthdayError: '请先添加至少一个生日',
+                icsLoadError: 'ICS库未加载，请刷新页面重试',
+                generateFailed: '生成ICS文件失败，请查看控制台'
             },
             'zh-TW': {
                 title: '農曆生日日曆生成器',
@@ -567,7 +575,7 @@
                 lunarMonth: '農曆月份',
                 leapMonth: '閏月',
                 lunarDay: '農曆日期',
-                note: '備註（可選）',
+                note: '備註',
                 notePlaceholder: '例如：爸爸的生日',
                 operations: '操作',
                 generateICS: '生成ICS文件',
@@ -605,11 +613,25 @@
                 successfullyDeleted: '成功刪除生日',
                 successfullyCleared: '成功清空所有生日',
                 successfullyGenerated: '成功生成ICS文件',
-                confirmClear: '確定要清空所有生日嗎？'
+                confirmClear: '確定要清空所有生日嗎？',
+                name: '姓名',
+                addBirthdayBtn: '添加生日',
+                del: '刪除',
+                lunarLabel: '農曆',
+                solarLabel: '公曆',
+                noBirthdayError: '請先添加至少一個生日',
+                icsLoadError: 'ICS庫未加載，請刷新頁面重試',
+                generateFailed: '生成ICS文件失敗，請查看控制台'
             }
         };
 
         const monthNames = ['正月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '腊月'];
+
+        const EMPTY_SVG = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20a2 2 0 0 0 0 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V9h14v11zM9 11H7v2h2v-2zm4 0h-2v2h2v-2zm4 0h-2v2h2v-2zm-8 4H7v2h2v-2zm4 0h-2v2h2v-2zm4 0h-2v2h2v-2zm-8 4H7v2h2v-2zm4 0h-2v2h2v-2zm4 0h-2v2h2v-2z"/></svg>';
+
+        function lunarMonthArg(month, isLeap) {
+            return isLeap ? -Math.abs(month) : month;
+        }
 
         function init() {
             populateYearSelect();
@@ -661,15 +683,14 @@
             const isLeapMonth = document.getElementById('isLeapMonth').checked;
             const warning = document.getElementById('leapMonthWarning');
 
-            try {
-                const lunar = Lunar.fromYmd(year, month, 1);
-                const hasLeapMonth = lunar.getYear().getLeapMonth() === month;
+            if (!isLeapMonth) {
+                warning.classList.remove('show');
+                return;
+            }
 
-                if (isLeapMonth && !hasLeapMonth) {
-                    warning.classList.add('show');
-                } else {
-                    warning.classList.remove('show');
-                }
+            try {
+                const leapMonth = LunarYear.fromYear(year).getLeapMonth();
+                warning.classList.toggle('show', leapMonth !== month);
             } catch (e) {
                 warning.classList.remove('show');
             }
@@ -690,17 +711,14 @@
             for (let j = 0; j < 5; j++) {
                 const year = currentYear + 1 + j;
                 try {
-                    const lunar = Lunar.fromYmd(year, lunarMonth, lunarDay, isLeapMonth);
+                    const lunar = Lunar.fromYmd(year, lunarMonthArg(lunarMonth, isLeapMonth), lunarDay);
                     const solar = lunar.getSolar();
-                    
-                    const yearNum = solar.getYear();
-                    const monthNum = solar.getMonth();
-                    const dayNum = solar.getDay();
-                    
-                    const month = String(monthNum + 1).padStart(2, '0');
-                    const day = String(dayNum).padStart(2, '0');
-                    
-                    dates.push({ year: year, date: `${yearNum}-${month}-${day}` });
+
+                    const solarYear = solar.getYear();
+                    const month = String(solar.getMonth()).padStart(2, '0');
+                    const day = String(solar.getDay()).padStart(2, '0');
+
+                    dates.push({ year: solarYear, date: `${solarYear}-${month}-${day}` });
                 } catch (e) {
                     dates.push({ year: year, date: '计算失败' });
                 }
@@ -786,9 +804,7 @@
             if (birthdays.length === 0) {
                 list.innerHTML = `
                     <div class="empty-state">
-                        <svg viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20a2 2 0 0 0 0 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V9h14v11zM9 11H7v2h2v-2zm4 0h-2v2h2v-2zm4 0h-2v2h2v-2zm-8 4H7v2h2v-2zm4 0h-2v2h2v-2zm4 0h-2v2h2v-2zm-8 4H7v2h2v-2zm4 0h-2v2h2v-2zm4 0h-2v2h2v-2z"/>
-                        </svg>
+                        ${EMPTY_SVG}
                         <p>${translations[currentLanguage].noBirthdays}</p>
                         <p>${translations[currentLanguage].addBirthdayHint}</p>
                     </div>
@@ -796,30 +812,29 @@
                 return;
             }
 
+            const t = translations[currentLanguage];
             list.innerHTML = birthdays.map(birthday => {
                 const lunarDisplay = getLunarDateDisplay(birthday.lunarMonth, birthday.lunarDay, birthday.isLeapMonth);
                 const solarDates = getNextSolarDates(birthday.lunarMonth, birthday.lunarDay, birthday.isLeapMonth);
-                
+
                 const datesDisplay = solarDates.map((date, index) => {
-                    if (index === 0) {
-                        return `<div style="margin-top: 8px;"><span class="solar">${date.year}年公历：${date.date}</span></div>`;
-                    }
-                    return `<div style="margin-top: 4px;"><span class="solar">${date.year}年公历：${date.date}</span></div>`;
+                    const margin = index === 0 ? 8 : 4;
+                    return `<div style="margin-top: ${margin}px;"><span class="solar">${date.year}年${t.solarLabel}：${date.date}</span></div>`;
                 }).join('');
-                
+
                 return `
                     <div class="birthday-item">
                         <div class="birthday-info">
                             <div class="birthday-name">${birthday.name}</div>
                             <div class="birthday-date">
-                                <span class="lunar">农历：${lunarDisplay}</span>
+                                <span class="lunar">${t.lunarLabel}：${lunarDisplay}</span>
                                 <br>
                                 ${datesDisplay}
                             </div>
                             ${birthday.note ? `<div class="birthday-note">${birthday.note}</div>` : ''}
                         </div>
                         <div class="birthday-actions">
-                            <button class="btn btn-danger" onclick="deleteBirthday('${birthday.id}')">删除</button>
+                            <button class="btn btn-danger" onclick="deleteBirthday('${birthday.id}')">${t.del}</button>
                         </div>
                     </div>
                 `;
@@ -831,13 +846,15 @@
         }
 
         function generateICS() {
+            const t = translations[currentLanguage];
+
             if (birthdays.length === 0) {
-                showToast('请先添加至少一个生日', 'error');
+                showToast(t.noBirthdayError, 'error');
                 return;
             }
 
             if (typeof ics === 'undefined') {
-                showToast('ICS库未加载，请刷新页面重试', 'error');
+                showToast(t.icsLoadError, 'error');
                 return;
             }
 
@@ -848,7 +865,7 @@
 
                 birthdays.forEach(birthday => {
                     try {
-                        const lunar = Lunar.fromYmd(nextYear, birthday.lunarMonth, birthday.lunarDay, birthday.isLeapMonth);
+                        const lunar = Lunar.fromYmd(nextYear, lunarMonthArg(birthday.lunarMonth, birthday.isLeapMonth), birthday.lunarDay);
                         const solar = lunar.getSolar();
 
                         const year = solar.getYear();
@@ -881,17 +898,20 @@
                 showToast(translations[currentLanguage].successfullyGenerated);
             } catch (e) {
                 console.error('Failed to generate ICS:', e);
-                showToast('生成ICS文件失败，请查看控制台', 'error');
+                showToast(t.generateFailed, 'error');
             }
         }
 
-        function switchLanguage(lang) {
+        function switchLanguage(lang, evt) {
             currentLanguage = lang;
             localStorage.setItem('language', lang);
+            document.documentElement.lang = lang;
 
             const btns = document.querySelectorAll('.language-btn');
             btns.forEach(btn => btn.classList.remove('active'));
-            event.target.classList.add('active');
+            if (evt && evt.target) {
+                evt.target.classList.add('active');
+            }
 
             applyLanguage();
             renderBirthdays();
@@ -901,15 +921,16 @@
             const saved = localStorage.getItem('language');
             if (saved && translations[saved]) {
                 currentLanguage = saved;
-                const btns = document.querySelectorAll('.language-btn');
-                btns.forEach(btn => {
-                    btn.classList.remove('active');
-                    if (btn.textContent.includes(saved === 'zh-CN' ? '简体' : '繁體')) {
-                        btn.classList.add('active');
-                    }
-                });
-                applyLanguage();
             }
+            document.documentElement.lang = currentLanguage;
+
+            const activeText = currentLanguage === 'zh-CN' ? '简体' : '繁體';
+            document.querySelectorAll('.language-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.textContent.includes(activeText));
+            });
+
+            applyLanguage();
+            renderBirthdays();
         }
 
         function applyLanguage() {
@@ -922,15 +943,12 @@
                 }
             });
 
-            const subtitle = document.querySelector('h1 small');
-            if (subtitle) {
-                subtitle.textContent = t.subtitle;
-            }
-
-            const statsLabel = document.querySelector('.stats-label');
-            if (statsLabel) {
-                statsLabel.textContent = t.addedBirthdays;
-            }
+            document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+                const key = el.getAttribute('data-i18n-placeholder');
+                if (t[key]) {
+                    el.placeholder = t[key];
+                }
+            });
         }
 
         function showHelp() {

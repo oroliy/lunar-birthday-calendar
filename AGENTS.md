@@ -1,151 +1,63 @@
 # AGENTS.md
 
-This repository contains a lunar birthday calendar generator - a single-page web application that converts lunar birthdays to ICS calendar files.
+Single-page static app that converts lunar birthdays to ICS calendar files. All HTML/CSS/JS lives in `index.html`. No bundler, no package.json, no build step, no tests.
 
-## Build/Test/Lint Commands
-
-**No build process required** - This is a pure static HTML/CSS/JavaScript application with no dependencies to install or build commands to run.
-
-### Manual Testing
+## Running locally
 ```bash
-# Open the application in browser
-open index.html
-# Or serve with a local server (recommended for testing)
-python3 -m http.server 8000
-# Then visit http://localhost:8000
+python3 -m http.server 8000   # then open http://localhost:8000
 ```
+There is no lint/typecheck/test command. Verification is manual: open the page, watch the browser console, exercise add/generate/delete/language-switch/refresh.
 
-### Browser Console Testing
-- Open browser DevTools (F12)
-- Check Console for errors during ICS generation
-- Test functionality: add birthdays, generate ICS, verify localStorage
-- Test both languages (zh-CN, zh-TW)
+## Dependencies (CDN, pinned — never use `@latest`)
+Loaded from jsDelivr at the **end of `<body>`** in `index.html` (after the DOM, before the inline script — they're render-blocking and `lunar.js` alone is ~300 KB; the inline `init()` calls `Lunar` synchronously, so they must load before it runs):
+- `lunar-javascript@1.7.7` — lunar↔solar conversion
+- `chinese-conv@4.0.0` — simplified↔traditional Chinese
+- `ics.js@2.3.2` — ICS file generation
 
-### Deployment Test
-```bash
-# Deploy to GitHub Pages (automatic on push to main)
-git push origin main
-# Or test locally with:
-npx serve . -p 8000
-```
+Bumping a version requires manual re-testing of ICS output; breaking changes have shipped on minor bumps before.
 
-## Code Style Guidelines
+## lunar-javascript date API — critical
+Verified from the 1.7.7 source, and it contradicts native JS `Date`:
+- `Solar.getMonth()` returns **1–12** (not 0–11). `Solar.getDay()` returns **1–31**.
+- `Solar.toYmd()` already returns a zero-padded `YYYY-MM-DD` string — safe for display.
 
-### File Structure
-- **Single-file architecture**: All HTML, CSS, and JavaScript in `index.html`
-- **No external files**: Do not create separate .css or .js files
-- **No build tools**: No Webpack, Vite, npm, or bundlers
-- **CDN-only dependencies**: All libraries loaded from jsDelivr CDN
-
-### External Libraries (CDN versions)
-Use these specific stable versions:
-- `lunar-javascript@1.7.7` - Lunar/solar calendar conversion
-- `chinese-conv@4.0.0` - Simplified/traditional Chinese conversion
-- `ics.js@2.3.2` - ICS file generation (DO NOT use @latest)
-
-**Critical**: Always pin specific versions, never use `@latest` due to breaking changes.
-
-### JavaScript Conventions
-- **Naming**: camelCase for variables and functions (e.g., `addBirthday`, `checkLeapMonth`)
-- **Function names**: Descriptive, verb-first (e.g., `renderBirthdays`, `saveBirthdays`)
-- **Constants**: UPPER_SNAKE_CASE for translations and month names
-- **Event handlers**: Direct function references in HTML (e.g., `onclick="showHelp()"`)
-- **Error handling**: Wrap external library calls in try-catch blocks
-- **User feedback**: Use `showToast()` for success/error messages (never alert)
-
-### Data Management
-- **Persistence**: Use `localStorage` with key `'lunarBirthdays'`
-- **Language preference**: Store in `localStorage` with key `'language'`
-- **Data structure**: Array of objects with `id`, `name`, `referenceYear`, `lunarMonth`, `lunarDay`, `isLeapMonth`, `note`, `createdAt`
-- **ID generation**: Use `Date.now().toString()` for unique IDs
-
-### CSS Conventions
-- **Inline styles**: All CSS in `<style>` tags within `<head>`
-- **Class naming**: kebab-case (e.g., `.btn-primary`, `.birthday-item`)
-- **Responsive**: Mobile-first with `@media (max-width: 768px)` breakpoint
-- **Colors**: Primary `#667eea`, success `#2ed573`, danger `#ff4757`
-- **Animations**: CSS transitions for hover states, keyframes for toast slide-in
-
-### HTML Conventions
-- **Semantic**: Use `<header>`, `<main>`, `<section>` where appropriate
-- **Accessibility**: Include labels for all form inputs, use semantic buttons
-- **Chinese text**: Form labels stay in simplified Chinese (not affected by language switch)
-- **UI labels**: Use `<span class="optional-indicator">` for (必填)/(可选) indicators
-
-### ICS File Generation
-- **Recurrence**: Use `YEARLY` frequency with no `UNTIL` or `COUNT` (permanent)
-- **Date format**: `YYYYMMDDTHHMMSSZ` (all-day: `T000000Z`)
-- **Base year**: Always use next year (currentYear + 1) for first occurrence
-- **Timezone**: UTC only (Z suffix)
-- **Error check**: Verify `typeof ics !== 'undefined'` before generating
-
-### Date Calculations
-**Critical pattern - Manual date formatting** (DO NOT use `solar.toYmd()`):
+Format solar dates **without** adding 1 to the month:
 ```javascript
 const solar = lunar.getSolar();
-const yearNum = solar.getYear();
-const monthNum = solar.getMonth();  // Returns 0-11
-const dayNum = solar.getDay();
-const month = String(monthNum + 1).padStart(2, '0');  // Convert to 1-12
-const day = String(dayNum).padStart(2, '0');
-const date = `${yearNum}-${month}-${day}`;
+const month = String(solar.getMonth()).padStart(2, '0'); // already 1-12, NO +1
+const day   = String(solar.getDay()).padStart(2, '0');
 ```
 
-### Variable Scope
-- **Avoid naming collisions**: Use different variable names in different functions (e.g., `i` in one loop, `j` in another)
-- **Loop variables**: Initialize at loop start, not from outer scope
-- **Global variables**: Minimize - only `birthdays`, `currentLanguage`, `translations`, `monthNames`
-
-### Language Support
-- **Supported**: zh-CN (simplified), zh-TW (traditional) only
-- **Switch scope**: Affects UI elements, NOT form field labels (those stay simplified Chinese)
-- **Storage**: Save preference to localStorage
-- **Conversion**: Use `ChineseConv()` from chinese-conv library
-- **DO NOT add**: English or other languages unless explicitly requested
-
-### Error Handling Patterns
+**Leap months:** `Lunar.fromYmd(y, m, d)` takes exactly **3 args**; a leap month is a **negative** month (e.g. `-5` for leap fifth month), never a boolean 4th arg. Use the shared helper so both conversion paths stay consistent:
 ```javascript
-try {
-  const result = someLibraryCall();
-} catch (e) {
-  console.error('Description:', e);
-  showToast('User-friendly message', 'error');
-}
+Lunar.fromYmd(year, lunarMonthArg(month, isLeapMonth), day)
 ```
+`lunarMonthArg(month, isLeap)` returns `-Math.abs(month)` when `isLeap`, else `month`. Both `getNextSolarDates` and `generateICS` call it.
 
-### Testing Checklist Before Commit
-- [ ] Open `index.html` in browser and verify no console errors
-- [ ] Test adding a birthday (simplified Chinese)
-- [ ] Test adding a birthday (traditional Chinese)
-- [ ] Test ICS file generation and download
-- [ ] Verify language switch doesn't affect form labels
-- [ ] Test leap month warning display
-- [ ] Test delete and clear all functions
-- [ ] Verify localStorage persistence across page refresh
-- [ ] Check responsive design on mobile viewport
+**Leap-month check:** `LunarYear.fromYear(y).getLeapMonth()` returns the leap month (1–12) for year `y`, or `0` if none. Do **not** call `.getLeapMonth()` on `lunar.getYear()` — that returns a plain number and throws.
+
+## ICS generation
+- All-day, `YEARLY` recurrence, no `UNTIL`/`COUNT` (permanent).
+- Date format `YYYYMMDDT000000Z` (UTC, `Z` suffix).
+- First occurrence uses **next year** (`new Date().getFullYear() + 1`).
+- Guard with `if (typeof ics === 'undefined')` before calling `ics()` — the CDN load can fail.
+
+## Data & language
+- `localStorage` key `'lunarBirthdays'` → JSON array of `{ id, name, referenceYear, lunarMonth, lunarDay, isLeapMonth, note, createdAt }`.
+- `localStorage` key `'language'` → `'zh-CN'` (default) or `'zh-TW'`.
+- IDs: `Date.now().toString()`.
+- Languages: **zh-CN and zh-TW only.** All translatable UI text is driven by `data-i18n` (element text) and `data-i18n-placeholder` (input placeholders) attributes, backed by the `translations` table; `applyLanguage()` walks both. When adding UI text, add the key to **both** locale blocks (they must stay in parity) and tag the element. Do not add English or other locales unless explicitly asked.
+
+## Conventions
+- **Single-file architecture is mandatory:** do not split into `.css`/`.js` files, do not add bundlers or npm deps.
+- Direct event handlers in HTML (`onclick=...`); functions live in one `<script>` block.
+- camelCase vars/funcs; UPPER_SNAKE_CASE for translation/month tables; kebab-case classes.
+- Use `showToast(msg, type)` for user feedback (never `alert`). `confirm()` is acceptable for destructive actions (e.g. clear-all).
+- Wrap external-library calls in try/catch and surface failures via `showToast`.
+- Avoid loop-variable name collisions across functions (a recurring source of bugs here — use distinct names per loop).
+- Theme colors: primary `#667eea`, success `#2ed573`, danger `#ff4757`. `(必填)/(可选)` indicators use `<span class="optional-indicator">`.
 
 ## Deployment
-- **Platform**: GitHub Pages (automatic on push to main)
-- **Workflow**: `.github/workflows/deploy.yml`
-- **URL**: https://oroliy.github.io/lunar-birthday-calendar/
-- **No manual deployment**: Just push to main branch
-
-## Important Bugs to Watch For
-1. **Variable naming collisions**: Different loops must use different variable names
-2. **ICS library loading**: Always check `typeof ics !== 'undefined'` before use
-3. **Date formatting**: Manually construct dates, don't rely on library methods
-4. **Loop initialization**: Start loops at 0 unless intentionally starting at 1
-5. **CDN version stability**: Never use `@latest`, always pin specific versions
-6. **Month indexing**: `solar.getMonth()` returns 0-11, add 1 for display
-
-## Feature Requests - Decision Framework
-- **New languages**: Only implement if explicitly requested
-- **Batch import**: Consider CSV format if requested
-- **Build tools**: Reject - maintain pure static approach
-- **Separate files**: Reject - keep single-file architecture
-- **English support**: Reject unless explicitly requested
-
-## Git Workflow
-- **Branch**: Work directly on main (no feature branches needed for this simple project)
-- **Commits**: Descriptive, single purpose
-- **No auto-merge**: Manual testing required before considering work complete
+- GitHub Pages, auto-deploys on push to `main` via `.github/workflows/deploy.yml`.
+- Live URL: https://oroliy.github.io/lunar-birthday-calendar/
+- Work directly on `main`; manual browser verification expected before considering work done.
